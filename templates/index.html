@@ -1,5 +1,31 @@
 {% extends "base.html" %}
 
-{% block content%}
-    <h1>Привет, {{ username }}!</h1>
-{% endblock%}
+{% block content %}
+<h1>Sightseeing</h1>
+{% for item in attractions%}
+<div id="item" class="col-md6 border rounded">
+    <h2 id="name">{{item.name}}</h2>
+    <div id="description">
+        <h4>
+            Description: {{item.description}}
+        </h4>
+    </div>
+    <div id="picture">
+        <img src="{{ item.pic }}" alt="Not found">
+    </div>
+    <div id="map">
+        <a href="{{ item.map }}">Show on the map</a>
+    </div>
+    <div>
+        <h4>
+            City: {{ item.сity }}, Country: {{ item.country }}
+        </h4>
+    </div>
+    <div>
+        <h4>
+        Author: {{ item.user.name }}, created date: {{item.created_date.strftime('%d.%m.%Y')}}
+    </h4>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

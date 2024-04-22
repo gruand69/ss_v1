@@ -31,3 +31,8 @@ div#item {
     text-align: center;
     margin-bottom: 10px;
  }
+
+ a#attr_but {
+   margin-top: 15px;;
+   margin-bottom: 15px;
+}

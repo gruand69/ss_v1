@@ -29,6 +29,16 @@
         Author: {{ item.user.name }}, created date: {{item.created_date.strftime('%d.%m.%Y')}}
     </h4>
     </div>
+    {% if current_user.is_authenticated and current_user == item.user %}
+        <div id="buttons">
+            <a href="/attractions/{{ item.id }}" class="btn btn-warning">
+                Change
+            </a>
+            <a href="/attractions_delete/{{ item.id }}" class="btn btn-danger">
+                Delete
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endfor %}
 {% endblock %}

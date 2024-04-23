@@ -1,4 +1,9 @@
-from flask import Flask, render_template, redirect, request
+import os
+from flask import (Flask,
+                   render_template,
+                   redirect,
+                   request,
+                   abort)
 from data import db_session
 
 from data.users import User
@@ -97,18 +102,92 @@ def add_attractions():
         attractions.сity = form.city.data
         attractions.country = form.country.data
         f = request.files['file']
-        data = f.read()
-        with open(f'static/img/{attractions.name}.jpg', 'wb+') as file:
-            file.write(data)
-        attractions.pic = f'static/img/{attractions.name}.jpg'
-        attractions.map = f'https://yandex.ru/maps/?mode=search&text={attractions.name}'
+        # print(f.filename.split('.')[1])
+        if f and f.filename.split('.')[1] in ('jpeg', 'jpg', 'png'):
+            data = f.read()
+            with open(f'static/img/{attractions.name}.jpg', 'wb+') as file:
+                file.write(data)
+            attractions.pic = f'static/img/{attractions.name}.jpg'
+        else:
+            return render_template(
+                'attractions.html',
+                title='Add attraction',
+                form=form, message='No picture file or wrong file extension')
+        attractions.map = (
+            f'https://yandex.ru/maps/?mode=search&text={attractions.name}')
         current_user.attractions.append(attractions)
 
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
-    return render_template('attractions.html', title='Добавление новости',
+    return render_template('attractions.html', title='Add attraction',
                            form=form)
+
+
+@app.route('/attractions/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_attractions(id):
+    form = AttractionsForm()
+    if request.method == 'GET':
+        db_sess = db_session.create_session()
+        attractions = db_sess.query(Attractions).filter(
+            Attractions.id == id, Attractions.user == current_user
+                                          ).first()
+        if attractions:
+            form.name.data = attractions.name
+            form.description.data = attractions.description
+            form.city.data = attractions.сity
+            form.country.data = attractions.country
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        attractions = db_sess.query(Attractions).filter(
+            Attractions.id == id, Attractions.user == current_user
+                                          ).first()
+        if attractions:
+            attractions.name = form.name.data
+            attractions.description = form.description.data
+            attractions.сity = form.city.data
+            attractions.country = form.country.data
+            attractions.map = (
+                f'https://yandex.ru/maps/?mode=search&text={attractions.name}')
+            f = request.files['file']
+            if f and f.filename.split('.')[1] not in ('jpeg', 'jpg', 'png'):
+                return render_template(
+                    'attractions.html',
+                    title='Add attraction',
+                    form=form, message='Wrong file extension')
+            if f and f.filename.split('.')[1] in ('jpeg', 'jpg', 'png'):
+                data = f.read()
+                with open(f'static/img/{attractions.name}.jpg', 'wb+') as file:
+                    file.write(data)
+                attractions.pic = f'static/img/{attractions.name}.jpg'
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('attractions.html',
+                           title='Edit attraction',
+                           form=form)
+
+
+@app.route('/attractions_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def attractions_delete(id):
+    db_sess = db_session.create_session()
+    attractions = db_sess.query(
+        Attractions).filter(Attractions.id == id,
+                            Attractions.user == current_user
+                            ).first()
+    if attractions:
+        os.remove(f'static/img/{attractions.name}.jpg')
+        db_sess.delete(attractions)
+        db_sess.commit()
+        # os.remove(f'static/img/{attractions.name}.jpg')
+    else:
+        abort(404)
+    return redirect('/')
 
 
 def main():
@@ -156,8 +235,9 @@ def main():
     # attraction1.description = "church located on Red Square in Moscow"
     # attraction1.сity = "Moscow"
     # attraction1.country = "Russia"
-    # attraction1.map = "https://yandex.ru/maps/?mode=search&text=Москва+Покровский+собор"
-    # attraction1.pic = "static/img/vb_template.jpg"
+    # attraction1.map = (
+    #     "https://yandex.ru/maps/?mode=search&text=Москва+Покровский+собор")
+    # # attraction1.pic = "static/img/vb_template.jpg"
     # attraction1.user_id = 2
 
     # attraction2 = Attractions()
@@ -174,7 +254,8 @@ def main():
     # attraction3.description = "famous tower located in Paris"
     # attraction3.сity = "Paris"
     # attraction3.country = "France"
-    # attraction3.map = "https://yandex.ru/maps/?mode=search&text=Париж+Эйфелева+башня"
+    # attraction3.map = (
+    #     "https://yandex.ru/maps/?mode=search&text=Париж+Эйфелева+башня")
     # attraction3.pic = "static/img/efil_tower.jpg"
     # attraction3.user_id = 3
 
@@ -188,4 +269,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    

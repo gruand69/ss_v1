@@ -36,3 +36,11 @@ div#item {
    margin-top: 15px;;
    margin-bottom: 15px;
 }
+
+#message{
+   color: red;
+}
+
+div#buttons {
+   margin-bottom: 10px;
+}

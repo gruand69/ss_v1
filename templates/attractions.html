@@ -41,12 +41,13 @@
         {% endfor %}
     </p>
     <div class="form-group">
-        <label for="photo">Choose file</label>
+        <h4>Correct file extensoins are jpg, jpeg or png.</h4>
+        <label for="pic">Choose file</label>
         <input type="file" class="form-control-file" id="pic" name="file">
     </div>
     <p>
         {{ form.submit(type="submit", class="btn btn-primary") }}
     </p>
-    {{message}}
+    <h2 id="message">{{ message }}</h2>
 </form>
 {% endblock %}

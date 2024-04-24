@@ -4,12 +4,17 @@ from flask import (Flask,
                    redirect,
                    request,
                    abort)
+from flask_restful import Api
 from data import db_session
 
 from data.users import User
 from data.attractions import Attractions
 from forms.user import RegisterForm, LoginForm
 from forms.attractions import AttractionsForm
+from data.attractions_resources import (AttractionsListResourse,
+                                        AttractionsResource)
+from data.users_resource import (UsersListResourse,
+                                        UserResource)
 
 from flask_login import (LoginManager,
                          login_user,
@@ -19,6 +24,7 @@ from flask_login import (LoginManager,
 
 
 app = Flask(__name__)
+api = Api(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -99,7 +105,7 @@ def add_attractions():
         attractions = Attractions()
         attractions.name = form.name.data
         attractions.description = form.description.data
-        attractions.сity = form.city.data
+        attractions.city = form.city.data
         attractions.country = form.country.data
         f = request.files['file']
         # print(f.filename.split('.')[1])
@@ -136,7 +142,7 @@ def edit_attractions(id):
         if attractions:
             form.name.data = attractions.name
             form.description.data = attractions.description
-            form.city.data = attractions.сity
+            form.city.data = attractions.city
             form.country.data = attractions.country
         else:
             abort(404)
@@ -148,7 +154,7 @@ def edit_attractions(id):
         if attractions:
             attractions.name = form.name.data
             attractions.description = form.description.data
-            attractions.сity = form.city.data
+            attractions.city = form.city.data
             attractions.country = form.country.data
             attractions.map = (
                 f'https://yandex.ru/maps/?mode=search&text={attractions.name}')
@@ -181,7 +187,8 @@ def attractions_delete(id):
                             Attractions.user == current_user
                             ).first()
     if attractions:
-        os.remove(f'static/img/{attractions.name}.jpg')
+        if os.path.isfile(f'static/img/{attractions.name}.jpg'):
+            os.remove(f'static/img/{attractions.name}.jpg')
         db_sess.delete(attractions)
         db_sess.commit()
         # os.remove(f'static/img/{attractions.name}.jpg')
@@ -192,6 +199,13 @@ def attractions_delete(id):
 
 def main():
     db_session.global_init('/home/gruand69/Dev/ss_v1/db/ss.db')
+
+    api.add_resource(AttractionsListResourse, '/api/attractions')
+    api.add_resource(
+        AttractionsResource, '/api/attractions/<int:attractions_id>')
+    api.add_resource(UsersListResourse, '/api/users')
+    api.add_resource(UserResource, '/api/users/<int:user_id>')
+
     app.run(port=8080, host='127.0.0.1')
 
     # user = User()
@@ -224,7 +238,7 @@ def main():
     # attraction = Attractions()
     # attraction.name = "moscow_city"
     # attraction.description = "group of skyscraper in Moscow"
-    # attraction.сity = "Moscow"
+    # attraction.city = "Moscow"
     # attraction.country = "Russia"
     # attraction.map = "https://yandex.ru/maps/?mode=search&text=Москва+сити"
     # attraction.pic = "static/img/moskva_city.jpg"
@@ -233,7 +247,7 @@ def main():
     # attraction1 = Attractions()
     # attraction1.name = "vb_template"
     # attraction1.description = "church located on Red Square in Moscow"
-    # attraction1.сity = "Moscow"
+    # attraction1.city = "Moscow"
     # attraction1.country = "Russia"
     # attraction1.map = (
     #     "https://yandex.ru/maps/?mode=search&text=Москва+Покровский+собор")
@@ -243,7 +257,7 @@ def main():
     # attraction2 = Attractions()
     # attraction2.name = "luvr"
     # attraction2.description = "museum located in center of Paris"
-    # attraction2.сity = "Paris"
+    # attraction2.city = "Paris"
     # attraction2.country = "France"
     # attraction2.map = "https://yandex.ru/maps/?mode=search&text=Париж+Лувр"
     # attraction2.pic = "static/img/luvr.jpeg"
@@ -252,7 +266,7 @@ def main():
     # attraction3 = Attractions()
     # attraction3.name = "efil_tower"
     # attraction3.description = "famous tower located in Paris"
-    # attraction3.сity = "Paris"
+    # attraction3.city = "Paris"
     # attraction3.country = "France"
     # attraction3.map = (
     #     "https://yandex.ru/maps/?mode=search&text=Париж+Эйфелева+башня")

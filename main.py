@@ -14,7 +14,7 @@ from forms.attractions import AttractionsForm
 from data.attractions_resources import (AttractionsListResourse,
                                         AttractionsResource)
 from data.users_resource import (UsersListResourse,
-                                        UserResource)
+                                 UserResource)
 
 from flask_login import (LoginManager,
                          login_user,
